@@ -1,0 +1,14 @@
+[build-system]
+requires = ['setuptools', 'wheel']
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line_length = 100
+include = '((deployments/cdk|lambda)/.*\.py$|tests/.*\.py$)'
+extend_exclude = '(.venv|build)'
+
+[tool.isort]
+profile = 'black'
+skip = 'cdk.out,.venv,node_modules'
+#extend_skip = []
+line_length = 100
