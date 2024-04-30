@@ -21,13 +21,13 @@ class WordpressStack(cdk.Stack):
             self,
             "VPC",
             nat_gateways=1,
-            cidr="10.0.0.0/16",
+            ipaddress=ec2.IpAddresses.cidr("10.0.0.0/16"),
             subnet_configuration=[
                 ec2.SubnetConfiguration(
                     name="public", subnet_type=ec2.SubnetType.PUBLIC, cidr_mask=24
                 ),
                 ec2.SubnetConfiguration(
-                    name="private", subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT, cidr_mask=24
+                    name="private", subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS, cidr_mask=24
                 ),
             ],
         )
@@ -43,7 +43,7 @@ class WordpressStack(cdk.Stack):
             self,
             "WordpressDatabase",
             credentials=rds.Credentials.from_password(
-                username=db_user, password=cdk.SecretValue.plain_text(db_password)
+                username=db_user, password=cdk.SecretValue.unsafe_plain_text(db_password)
             ),
             database_name=db_name,
             engine=rds.DatabaseInstanceEngine.MARIADB,
@@ -53,6 +53,11 @@ class WordpressStack(cdk.Stack):
         # ECS cluster
         cluster = ecs.Cluster(self, "ServiceCluster", vpc=self.vpc)
 
+        wp_health_check = ecs.HealthCheck(
+            command=['CMD-SHELL', 'curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -qE "200|301|302"'],
+            start_period=cdk.Duration.minutes(2)
+        )
+
         docker_image = ecs.ContainerImage.from_registry("wordpress")
         web_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
@@ -60,8 +65,8 @@ class WordpressStack(cdk.Stack):
             cluster=cluster,
             target_protocol=elbv2.ApplicationProtocol.HTTP,
             protocol=elbv2.ApplicationProtocol.HTTP,
+            health_check=wp_health_check,
             desired_count=1,
-            # container size
             cpu=512,
             memory_limit_mib=2048,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
@@ -77,5 +82,14 @@ class WordpressStack(cdk.Stack):
                 },
             ),
         )
+
+        web_service.target_group.configure_health_check(
+            path="/index.php",
+            healthy_http_codes="200,301,302",
+            interval=cdk.Duration.seconds(120),
+            unhealthy_threshold_count=10
+        )
+
+        database.connections.allow_default_port_from(web_service.service.connections)
 
         # TODO: add APIGW and dns + cert
