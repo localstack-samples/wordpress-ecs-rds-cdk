@@ -30,10 +30,21 @@ deploy-local:
 	cdklocal bootstrap || true; \
 	cdklocal deploy --all --require-approval never
 
+deploy-aws:
+	$(VENV_RUN); \
+	cd deployments/cdk; \
+	cdk bootstrap || true; \
+	cdk deploy --all --require-approval never
+
 destroy-local:
 	$(VENV_RUN); \
 	cd deployments/cdk; \
 	cdklocal destroy --all
+
+destroy-aws:
+	$(VENV_RUN); \
+	cd deployments/cdk; \
+	cdk destroy --all
 
 format:
 	$(VENV_ACTIVATE); python -m isort .; python -m black .
