@@ -47,7 +47,7 @@ jobs:
 
       - name: Set up Project
         run: |
-          pip install -r requirements-dev.txt
+          pip install -e ".[deploy,test]"
 
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@v0.2.2
@@ -59,9 +59,21 @@ jobs:
         env:
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
 
-      - name: Deploy infrastructure
+      - name: Set up NodeJS 22
+        id: setup-nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up CDK Local
+        id: setup-cdklocal
         run: |
-          bin/deploy.sh
+          npm install -g aws-cdk-local aws-cdk
+
+      - name: Deploy infrastructure
+        working-directory: deployments/cdk
+        run: |
+          cdklocal bootstrap && cdklocal deploy --require-approval never
 
       - name: Run Tests
         env:
