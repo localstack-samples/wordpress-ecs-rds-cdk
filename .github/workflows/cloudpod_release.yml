@@ -13,7 +13,7 @@ on:
       - .gitlab-ci.yml
     branches:
       - main
-            
+
 permissions:
   contents: write
 
@@ -34,35 +34,39 @@ jobs:
 
       - name: Set up Project
         run: |
-          pip install -r requirements-dev.txt
+          pip install -e ".[deploy]"
 
-      - name: Start LocalStack
+      - name: Set up NodeJS 22
+        id: setup-nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up CDK Local
+        id: setup-cdklocal
+        run: |
+          npm install -g aws-cdk-local aws-cdk
+
+
+      - name: Start LocalStackV2
         uses: LocalStack/setup-localstack@v0.2.2
         with:
           image-tag: ${{ inputs.release-tag || 'latest'}}
-          use-pro: 'true'
-          install-awslocal: 'true'
+          use-pro: "true"
+          install-awslocal: "true"
         env:
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
 
       - name: Deploy infrastructure
+        working-directory: deployments/cdk
         run: |
-          bin/deploy.sh
+          cdklocal bootstrap && cdklocal deploy --require-approval never
 
-      - name: Run Tests
-        env:
-          AWS_DEFAULT_REGION: us-east-1
-          AWS_REGION: us-east-1
-          AWS_ACCESS_KEY_ID: test
-          AWS_SECRET_ACCESS_KEY: test
-        run: |
-          pytest tests
-      
       # Not using action as state is not stored as an artifact
-      - name: Save the Cloud Pod 
+      - name: Save the Cloud Pod
         env:
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
-        run: | 
+        run: |
           localstack state export release-pod.zip
 
       - name: Prepare Release Notes
@@ -81,4 +85,4 @@ jobs:
           name: "Cloud Pod for LocalStack Version '${{ inputs.release-tag || 'latest'}}'"
           body_path: ./Release.txt
           files: |
-              ./release-pod.zip
+            ./release-pod.zip

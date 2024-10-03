@@ -21,7 +21,7 @@ class WordpressStack(cdk.Stack):
             self,
             "VPC",
             nat_gateways=1,
-            ipaddress=ec2.IpAddresses.cidr("10.0.0.0/16"),
+            ip_addresses=ec2.IpAddresses.cidr("10.0.0.0/16"),
             subnet_configuration=[
                 ec2.SubnetConfiguration(
                     name="public", subnet_type=ec2.SubnetType.PUBLIC, cidr_mask=24
@@ -54,8 +54,11 @@ class WordpressStack(cdk.Stack):
         cluster = ecs.Cluster(self, "ServiceCluster", vpc=self.vpc)
 
         wp_health_check = ecs.HealthCheck(
-            command=['CMD-SHELL', 'curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -qE "200|301|302"'],
-            start_period=cdk.Duration.minutes(2)
+            command=[
+                "CMD-SHELL",
+                'curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -qE "200|301|302"',
+            ],
+            start_period=cdk.Duration.minutes(2),
         )
 
         docker_image = ecs.ContainerImage.from_registry("wordpress")
@@ -87,7 +90,7 @@ class WordpressStack(cdk.Stack):
             path="/index.php",
             healthy_http_codes="200,301,302",
             interval=cdk.Duration.seconds(120),
-            unhealthy_threshold_count=10
+            unhealthy_threshold_count=10,
         )
 
         database.connections.allow_default_port_from(web_service.service.connections)
