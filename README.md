@@ -1,3 +1,5 @@
+[![LocalStack Pods Launchpad](https://localstack.cloud/gh/launch-pod-badge.svg)](https://app.localstack.cloud/launchpad?url=https://github.com/localstack-samples/wordpress-ecs-rds-cdk/releases/download/latest/release-pod.zip
+[![GitHub Actions](https://github.com/localstack-samples/wordpress-ecs-rds-cdk/actions/workflows/integration-test.yml/badge.svg)](https://github.com/localstack-samples/wordpress-ecs-rds-cdk/actions/workflows/integration-test.yml)
 wordpress-ecs-rds-cdk
 ===============================
 
@@ -20,8 +22,8 @@ After running `make install`, when you activate the virtual environment with
 
     source .venv/bin/activate
 
-you get the *local commands: 
-    
+you get the *local commands:
+
     cdklocal
     awslocal
 
