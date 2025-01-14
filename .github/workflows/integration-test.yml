@@ -72,6 +72,10 @@ jobs:
 
       - name: Deploy infrastructure
         working-directory: deployments/cdk
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
         run: |
           cdklocal bootstrap && cdklocal deploy --require-approval never
 
