@@ -8,6 +8,8 @@ Wordpress deployed using ECS and RDS
 
 ## Quickstart
 
+This sample requires a valid [LocalStack for AWS license](https://localstack.cloud/pricing). Your license provides a [`LOCALSTACK_AUTH_TOKEN`](https://docs.localstack.cloud/getting-started/auth-token/) to activate LocalStack.
+
 To install python requirements and developer tools (cdklocal, awslocal) into a venv run:
 
     make install
