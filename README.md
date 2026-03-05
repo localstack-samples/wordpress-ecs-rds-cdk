@@ -8,11 +8,19 @@ Wordpress deployed using ECS and RDS
 
 ## Quickstart
 
-to install python requirements and developer tools (ckdlocal, awslocal) into a venv run:
+To install python requirements and developer tools (cdklocal, awslocal) into a venv run:
 
     make install
 
-then, to deploy the cdk app, first start localstack and run
+Start LocalStack Pro with the `LOCALSTACK_AUTH_TOKEN` pre-configured:
+
+```bash
+export LOCALSTACK_AUTH_TOKEN=<your-auth-token>
+make start
+make ready
+```
+
+Then, to deploy the CDK app:
 
     make deploy-local
 
