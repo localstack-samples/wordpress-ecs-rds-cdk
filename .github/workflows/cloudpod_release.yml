@@ -24,11 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
         id: setup-python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
@@ -49,13 +49,13 @@ jobs:
 
 
       - name: Start LocalStackV2
-        uses: LocalStack/setup-localstack@v0.2.2
+        uses: LocalStack/setup-localstack@main
         with:
           image-tag: ${{ inputs.release-tag || 'latest'}}
           use-pro: "true"
           install-awslocal: "true"
         env:
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
 
       - name: Deploy infrastructure
         working-directory: deployments/cdk
@@ -70,7 +70,7 @@ jobs:
       # Not using action as state is not stored as an artifact
       - name: Save the Cloud Pod
         env:
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
         run: |
           localstack state export release-pod.zip
 

@@ -34,7 +34,7 @@ jobs:
     steps:
       # checkout to run the tests later on
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Loading it manually as we're storing the state as a release and not an artifact
       - name: Retrieve Pod
@@ -55,7 +55,7 @@ jobs:
           python-version: '3.11'
 
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.2.2
+        uses: LocalStack/setup-localstack@main
         with:
           image-tag: ${{ matrix.tag }}
           use-pro: 'true'
@@ -63,11 +63,11 @@ jobs:
         env:
           DEBUG: 1
           POD_LOAD_CLI_TIMEOUT: 300
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
 
       - name: Inject Pod
         env:
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
         run: |
           localstack state import release-pod.zip
 
