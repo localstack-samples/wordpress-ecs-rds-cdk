@@ -14,7 +14,7 @@ To install python requirements and developer tools (cdklocal, awslocal) into a v
 
     make install
 
-Start LocalStack Pro with the `LOCALSTACK_AUTH_TOKEN` pre-configured:
+Start LocalStack for AWS with the `LOCALSTACK_AUTH_TOKEN` pre-configured:
 
 ```bash
 export LOCALSTACK_AUTH_TOKEN=<your-auth-token>
