@@ -54,22 +54,33 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install lstk
+        run: |
+          npm install -g @localstack/lstk
+
+      - name: Configure the LocalStack image tag
+        run: |
+          mkdir -p .lstk
+          cat > .lstk/config.toml <<TOML
+          [[containers]]
+          type = "aws"
+          image = "localstack/localstack-pro"
+          tag = "${{ matrix.tag }}"
+          port = "4566"
+          TOML
+
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@main
-        with:
-          image-tag: ${{ matrix.tag }}
-          use-pro: 'true'
-          install-awslocal: 'true'
         env:
-          DEBUG: 1
-          POD_LOAD_CLI_TIMEOUT: 300
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+          LOCALSTACK_DEBUG: 1
+        run: |
+          lstk start
 
       - name: Inject Pod
         env:
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
         run: |
-          localstack state import release-pod.zip
+          lstk load release-pod.zip
 
       - name: Run Tests
         env:
@@ -84,7 +95,7 @@ jobs:
       - name: Show Logs
         if: failure()
         run: |
-          localstack logs
+          lstk logs
 
       - name: Send a Slack notification
         if: failure() || github.event_name != 'pull_request'
@@ -98,11 +109,3 @@ jobs:
           notify_when: "failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Prevent Workflows from getting Stale
-        if: always()
-        uses: gautamkrishnar/keepalive-workflow@v1
-        with:
-          # this message should prevent automatic triggering of workflows
-          # see https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
-          commit_message: "[skip ci] Automated commit by Keepalive Workflow to keep the repository active"

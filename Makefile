@@ -8,17 +8,14 @@ usage:		## Show this help
 
 start:		## Start LocalStack
 	@test -n "${LOCALSTACK_AUTH_TOKEN}" || (echo "LOCALSTACK_AUTH_TOKEN is not set. Find your token at https://app.localstack.cloud/workspace/auth-token"; exit 1)
-	@LOCALSTACK_AUTH_TOKEN=$(LOCALSTACK_AUTH_TOKEN) localstack start -d
+	@LOCALSTACK_AUTH_TOKEN=$(LOCALSTACK_AUTH_TOKEN) lstk start
 
 stop:		## Stop LocalStack
-	@localstack stop
+	@lstk stop
 
-ready:		## Wait until LocalStack is ready
-	@echo Waiting on the LocalStack container...
-	@localstack wait -t 30 && echo LocalStack is ready to use! || (echo Gave up waiting on LocalStack, exiting. && exit 1)
 
 logs:		## Save the logs in a separate file
-	@localstack logs > logs.txt
+	@lstk logs > logs.txt
 
 VENV_BIN = python3 -m venv
 VENV_DIR ?= .venv
@@ -44,13 +41,13 @@ clean:
 install: venv
 	npm install; \
 	ln -sfn `pwd`/node_modules/aws-cdk/bin/cdk $(VENV_DIR)/bin/; \
-	ln -sfn `pwd`/node_modules/aws-cdk-local/bin/cdklocal $(VENV_DIR)/bin/
+	which lstk || npm install -g @localstack/lstk
 
 deploy-local:
 	$(VENV_RUN); \
 	cd deployments/cdk; \
-	cdklocal bootstrap || true; \
-	cdklocal deploy --all --require-approval never
+	lstk cdk bootstrap || true; \
+	lstk cdk deploy --all --require-approval never
 
 deploy-aws:
 	$(VENV_RUN); \
@@ -61,7 +58,7 @@ deploy-aws:
 destroy-local:
 	$(VENV_RUN); \
 	cd deployments/cdk; \
-	cdklocal destroy --all
+	lstk cdk destroy --all
 
 destroy-aws:
 	$(VENV_RUN); \

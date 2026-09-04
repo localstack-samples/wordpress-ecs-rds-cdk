@@ -49,26 +49,22 @@ jobs:
         run: |
           pip install -e ".[deploy,test]"
 
-      - name: Start LocalStack
-        uses: LocalStack/setup-localstack@main
-        with:
-          image-tag: 'latest'
-          use-pro: 'true'
-          configuration: LS_LOG=trace
-          install-awslocal: 'true'
-        env:
-          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
-
       - name: Set up NodeJS 22
         id: setup-nodejs
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Set up CDK Local
-        id: setup-cdklocal
+      - name: Install lstk
         run: |
-          npm install -g aws-cdk-local aws-cdk
+          npm install -g @localstack/lstk aws-cdk
+
+      - name: Start LocalStack
+        env:
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+          LOCALSTACK_LS_LOG: trace
+        run: |
+          lstk start
 
       - name: Deploy infrastructure
         working-directory: deployments/cdk
@@ -78,7 +74,7 @@ jobs:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
         run: |
-          cdklocal bootstrap && cdklocal deploy --require-approval never
+          lstk cdk bootstrap && lstk cdk deploy --require-approval never
 
       - name: Run Tests
         env:
@@ -92,7 +88,7 @@ jobs:
       - name: Show localstack logs
         if: always()
         run: |
-          localstack logs
+          lstk logs
 
       - name: Send a Slack notification
         if: failure() || github.event_name != 'pull_request'

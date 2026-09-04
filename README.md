@@ -8,9 +8,9 @@ Wordpress deployed using ECS and RDS
 
 ## Quickstart
 
-This sample requires a valid [LocalStack for AWS license](https://localstack.cloud/pricing). Your license provides a [`LOCALSTACK_AUTH_TOKEN`](https://docs.localstack.cloud/getting-started/auth-token/) to activate LocalStack.
+This sample requires a valid [LocalStack for AWS license](https://localstack.cloud/pricing). Your license provides a [`LOCALSTACK_AUTH_TOKEN`](https://docs.localstack.cloud/aws/getting-started/auth-token/) to activate LocalStack.
 
-To install python requirements and developer tools (cdklocal, awslocal) into a venv run:
+To install python requirements and developer tools (the [`lstk` CLI](https://docs.localstack.cloud/aws/developer-tools/running-localstack/lstk/), which also requires the AWS CLI) into a venv run:
 
     make install
 
@@ -19,7 +19,6 @@ Start LocalStack for AWS with the `LOCALSTACK_AUTH_TOKEN` pre-configured:
 ```bash
 export LOCALSTACK_AUTH_TOKEN=<your-auth-token>
 make start
-make ready
 ```
 
 Then, to deploy the CDK app:
@@ -32,15 +31,15 @@ After running `make install`, when you activate the virtual environment with
 
     source .venv/bin/activate
 
-you get the *local commands:
+you can use the `lstk` proxies for the AWS CDK and AWS CLIs:
 
-    cdklocal
-    awslocal
+    lstk cdk
+    lstk aws
 
 You can for example get the name of the bucket that was created and whose name was added as an SSM parameter:
 
-    awslocal ssm get-parameter --name /artifacts/bucket
+    lstk aws ssm get-parameter --name /artifacts/bucket
 
 Or list the created lambdas:
 
-    awslocal lambda list-functions
+    lstk aws lambda list-functions
