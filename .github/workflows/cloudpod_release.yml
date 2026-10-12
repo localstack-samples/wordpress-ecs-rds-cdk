@@ -78,7 +78,9 @@ jobs:
         env:
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
         run: |
-          lstk save release-pod.zip
+          # lstk always writes a .snapshot file (same zip format), keep the release-pod.zip asset name
+          lstk save release-pod.snapshot
+          mv release-pod.snapshot release-pod.zip
 
       - name: Prepare Release Notes
         run: |
@@ -95,5 +97,6 @@ jobs:
           tag_name: "${{ inputs.release-tag || 'latest'}}"
           name: "Cloud Pod for LocalStack Version '${{ inputs.release-tag || 'latest'}}'"
           body_path: ./Release.txt
+          fail_on_unmatched_files: true
           files: |
             ./release-pod.zip
