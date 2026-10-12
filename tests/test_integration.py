@@ -33,9 +33,10 @@ def test_wordpress_status_code():
     wp_url = f"http://{wp_endpoint}:4566"
 
     def _assert_wp_response():
-        result = requests.get(wp_url)
+        result = requests.get(wp_url, timeout=10)
 
         assert result.status_code == 200
         assert "WordPress" in result.text
 
-    retry(_assert_wp_response, sleep=2)
+    # the ECS task starts after the stack is complete (image pull + target registration)
+    retry(_assert_wp_response, retries=60, sleep=2)
